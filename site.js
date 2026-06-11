@@ -242,13 +242,20 @@ async function fetchProviderData(providerName, baseUrl, lat, lon) {
         const h = data.hourly;
 
         for (let i = 0; i < h.time.length; i++) {
+            // Verifica e gestisce esplicitamente i valori null restituiti dall'API per ciascuna metrica
+            let temp = (h.temperature_2m && h.temperature_2m[i] !== null && h.temperature_2m[i] !== undefined) ? h.temperature_2m[i] : null;
+            let hum = (h.relative_humidity_2m && h.relative_humidity_2m[i] !== null && h.relative_humidity_2m[i] !== undefined) ? h.relative_humidity_2m[i] : null;
+            let prec = (h.precipitation && h.precipitation[i] !== null && h.precipitation[i] !== undefined) ? h.precipitation[i] : null;
+            let code = (h.weather_code && h.weather_code[i] !== null && h.weather_code[i] !== undefined) ? h.weather_code[i] : null;
+            let wind = (h.wind_speed_10m && h.wind_speed_10m[i] !== null && h.wind_speed_10m[i] !== undefined) ? h.wind_speed_10m[i] : null;
+
             hourlyForecasts.push({
                 dateTime: h.time[i],
-                temperature: h.temperature_2m ? h.temperature_2m[i] : 0,
-                humidity: h.relative_humidity_2m ? h.relative_humidity_2m[i] : 0,
-                precipitation: h.precipitation ? h.precipitation[i] : 0,
-                weatherCode: h.weather_code ? h.weather_code[i] : 0,
-                windSpeed: h.wind_speed_10m ? h.wind_speed_10m[i] : 0
+                temperature: temp,
+                humidity: hum,
+                precipitation: prec,
+                weatherCode: code,
+                windSpeed: wind
             });
         }
 
@@ -281,24 +288,33 @@ function computeAverageForecast(models) {
         });
 
         if (forecastsAtHour.length > 0) {
-            const sumTemp = forecastsAtHour.reduce((sum, f) => sum + f.temperature, 0);
-            const sumHum = forecastsAtHour.reduce((sum, f) => sum + f.humidity, 0);
-            const sumPrec = forecastsAtHour.reduce((sum, f) => sum + f.precipitation, 0);
-            const sumWind = forecastsAtHour.reduce((sum, f) => sum + f.windSpeed, 0);
-            const count = forecastsAtHour.length;
+            // Estrae solo i valori numerici non nulli per calcolare la media corretta
+            const temps = forecastsAtHour.filter(f => f.temperature !== null).map(f => f.temperature);
+            const hums = forecastsAtHour.filter(f => f.humidity !== null).map(f => f.humidity);
+            const precs = forecastsAtHour.filter(f => f.precipitation !== null).map(f => f.precipitation);
+            const winds = forecastsAtHour.filter(f => f.windSpeed !== null).map(f => f.windSpeed);
+
+            const avgTemp = temps.length > 0 ? temps.reduce((a, b) => a + b, 0) / temps.length : null;
+            const avgHum = hums.length > 0 ? hums.reduce((a, b) => a + b, 0) / hums.length : null;
+            const avgPrec = precs.length > 0 ? precs.reduce((a, b) => a + b, 0) / precs.length : null;
+            const avgWind = winds.length > 0 ? winds.reduce((a, b) => a + b, 0) / winds.length : null;
 
             // Codice meteo: prendiamo quello del primo modello disponibile o preferibilmente ECMWF
-            let repCode = forecastsAtHour[0].weatherCode;
-            const ecmwf = forecastsAtHour.find(f => f.weatherCode !== 0);
-            if (ecmwf) repCode = ecmwf.weatherCode;
+            let repCode = null;
+            const validCodes = forecastsAtHour.filter(f => f.weatherCode !== null);
+            if (validCodes.length > 0) {
+                repCode = validCodes[0].weatherCode;
+                const ecmwf = validCodes.find(f => f.weatherCode !== 0);
+                if (ecmwf) repCode = ecmwf.weatherCode;
+            }
 
             averageModel.hourlyForecasts.push({
                 dateTime: time,
-                temperature: Number((sumTemp / count).toFixed(1)),
-                humidity: Number((sumHum / count).toFixed(1)),
-                precipitation: Number((sumPrec / count).toFixed(2)),
+                temperature: avgTemp !== null ? Number(avgTemp.toFixed(1)) : null,
+                humidity: avgHum !== null ? Number(avgHum.toFixed(1)) : null,
+                precipitation: avgPrec !== null ? Number(avgPrec.toFixed(2)) : null,
                 weatherCode: repCode,
-                windSpeed: Number((sumWind / count).toFixed(1))
+                windSpeed: avgWind !== null ? Number(avgWind.toFixed(1)) : null
             });
         }
     });
@@ -368,9 +384,13 @@ function renderDaysGrid() {
     grid.innerHTML = "";
 
     groupedForecastData.forEach((day, index) => {
-        const temps = day.averageHours.map(h => h.temperature);
-        const maxTemp = Math.max(...temps);
-        const minTemp = Math.min(...temps);
+        // Filtra esplicitamente i valori null per evitare calcoli errati o NaN
+        const temps = day.averageHours.map(h => h.temperature).filter(t => t !== null);
+        const maxTemp = temps.length > 0 ? Math.max(...temps) : null;
+        const minTemp = temps.length > 0 ? Math.min(...temps) : null;
+
+        const maxTempText = maxTemp !== null ? Math.round(maxTemp) + "°" : "-";
+        const minTempText = minTemp !== null ? Math.round(minTemp) + "°" : "-";
 
         const midHourIndex = Math.floor(day.averageHours.length / 2);
         const representativeCode = day.averageHours[midHourIndex]?.weatherCode ?? 0;
@@ -387,8 +407,8 @@ function renderDaysGrid() {
             <div class="day-date">${dateLabel}</div>
             <i class="day-icon" data-lucide="${iconName}"></i>
             <div class="day-temp-range">
-                <span class="temp-max">${Math.round(maxTemp)}°</span>
-                <span class="temp-min">${Math.round(minTemp)}°</span>
+                <span class="temp-max">${maxTempText}</span>
+                <span class="temp-min">${minTempText}</span>
             </div>
         `;
 
@@ -552,17 +572,24 @@ function updateTable(selectedDay) {
             const provHrs = selectedDay.providerHours[p.name];
             const hourData = provHrs ? provHrs[index] : null;
 
-            if (hourData) {
-                const diff = hourData.temperature - avgHour.temperature;
-                const diffSign = diff > 0 ? "+" : "";
-                const diffClass = diff > 0.5 ? "text-danger" : (diff < -0.5 ? "text-primary" : "text-muted");
-                const diffText = Math.abs(diff) > 0.2 ? `<span class="small ${diffClass}">(${diffSign}${diff.toFixed(1)}°)</span>` : "";
+            // Protezione contro i valori nulli di temperatura e precipitazioni
+            if (hourData && hourData.temperature !== null) {
+                let diffText = "";
+                if (avgHour.temperature !== null) {
+                    const diff = hourData.temperature - avgHour.temperature;
+                    const diffSign = diff > 0 ? "+" : "";
+                    const diffClass = diff > 0.5 ? "text-danger" : (diff < -0.5 ? "text-primary" : "text-muted");
+                    diffText = Math.abs(diff) > 0.2 ? `<span class="small ${diffClass}">(${diffSign}${diff.toFixed(1)}°)</span>` : "";
+                }
+
+                const tempText = hourData.temperature.toFixed(1) + "°C";
+                const precText = (hourData.precipitation !== null && hourData.precipitation > 0) ? hourData.precipitation.toFixed(1) + " mm" : "-";
 
                 providerCellsHtml += `
                     <td>
                         <div class="cell-data">
-                            <span class="cell-val">${hourData.temperature.toFixed(1)}°C ${diffText}</span>
-                            <span class="cell-sub">${hourData.precipitation > 0 ? hourData.precipitation.toFixed(1) + " mm" : "-"}</span>
+                            <span class="cell-val">${tempText} ${diffText}</span>
+                            <span class="cell-sub">${precText}</span>
                         </div>
                     </td>
                 `;
@@ -571,6 +598,11 @@ function updateTable(selectedDay) {
             }
         });
 
+        // Formatta in modo sicuro i dati per la colonna della media
+        const tempVal = avgHour.temperature !== null ? avgHour.temperature.toFixed(1) + "°C" : "-";
+        const precVal = (avgHour.precipitation !== null && avgHour.precipitation > 0) ? avgHour.precipitation.toFixed(1) + " mm" : "0 mm";
+        const windVal = avgHour.windSpeed !== null ? avgHour.windSpeed + " km/h" : "-";
+
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${timePart}</td>
@@ -578,10 +610,10 @@ function updateTable(selectedDay) {
                 <div class="avg-cell-content">
                     <i class="weather-badge-icon text-indigo" data-lucide="${iconName}"></i>
                     <div class="cell-data">
-                        <span class="cell-val fw-bold">${avgHour.temperature.toFixed(1)}°C</span>
+                        <span class="cell-val fw-bold">${tempVal}</span>
                         <span class="cell-sub text-light-50">
-                            Pioggia: ${avgHour.precipitation > 0 ? avgHour.precipitation.toFixed(1) + " mm" : "0 mm"} | 
-                            Vento: ${avgHour.windSpeed} km/h
+                            Pioggia: ${precVal} | 
+                            Vento: ${windVal}
                         </span>
                     </div>
                 </div>
