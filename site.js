@@ -7,11 +7,12 @@ let currentChartType = 'temp'; // 'temp' o 'prec'
 
 // Nomi e URL base dei 5 modelli meteorologici
 const PROVIDERS = [
-    { name: "ECMWF (Europeo)", endpoint: "https://api.open-meteo.com/v1/ecmwf" },
-    { name: "DWD ICON (Tedesco)", endpoint: "https://api.open-meteo.com/v1/dwd-icon" },
-    { name: "NOAA GFS (USA)", endpoint: "https://api.open-meteo.com/v1/gfs" },
-    { name: "CMC GEM (Canadese)", endpoint: "https://api.open-meteo.com/v1/gem" },
-    { name: "MeteoFrance (Francese)", endpoint: "https://api.open-meteo.com/v1/meteofrance" }
+    { name: "ECMWF (Europeo)", endpoint: "https://api.open-meteo.com/v1/ecmwf?" },
+    { name: "DWD ICON (Tedesco)", endpoint: "https://api.open-meteo.com/v1/dwd-icon?" },
+    { name: "NOAA GFS (USA)", endpoint: "https://api.open-meteo.com/v1/gfs?" },
+    { name: "CMC GEM (Canadese)", endpoint: "https://api.open-meteo.com/v1/gem?" },
+    { name: "MeteoFrance (Francese)", endpoint: "https://api.open-meteo.com/v1/meteofrance?" },
+    { name: "MeteoSwiss (Svizzero)", endpoint: "https://api.open-meteo.com/v1/forecast?models=meteoswiss_icon_ch2&" }
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -228,7 +229,8 @@ async function loadForecast(lat, lon, name, region) {
 
 async function fetchProviderData(providerName, baseUrl, lat, lon) {
     try {
-        const url = `${baseUrl}?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&timezone=Europe/Rome`;
+        const url = `${baseUrl}latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&timezone=Europe/Rome`;
+        //const url = `${baseUrl}?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&timezone=Europe/Rome`;
         const response = await fetch(url);
         if (!response.ok) {
             console.warn(`Provider ${providerName} non raggiungibile: ${response.status}`);
@@ -472,7 +474,8 @@ function updateChart(selectedDay) {
         "DWD ICON (Tedesco)": "#f59e0b",
         "NOAA GFS (USA)": "#ef4444",
         "CMC GEM (Canadese)": "#10b981",
-        "MeteoFrance (Francese)": "#ec4899"
+        "MeteoFrance (Francese)": "#ec4899",
+        "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)"
     };
 
     const providerColorsPrec = {
@@ -480,7 +483,8 @@ function updateChart(selectedDay) {
         "DWD ICON (Tedesco)": "#0284c7",
         "NOAA GFS (USA)": "#2563eb",
         "CMC GEM (Canadese)": "#10b981",
-        "MeteoFrance (Francese)": "#8b5cf6"
+        "MeteoFrance (Francese)": "#8b5cf6",
+        "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)"
     };
 
     const colors = isTemp ? providerColorsTemp : providerColorsPrec;
