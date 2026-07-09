@@ -12,7 +12,8 @@ const PROVIDERS = [
     { name: "NOAA GFS (USA)", endpoint: "https://api.open-meteo.com/v1/gfs?" },
     { name: "CMC GEM (Canadese)", endpoint: "https://api.open-meteo.com/v1/gem?" },
     { name: "MeteoFrance (Francese)", endpoint: "https://api.open-meteo.com/v1/meteofrance?" },
-    { name: "MeteoSwiss (Svizzero)", endpoint: "https://api.open-meteo.com/v1/forecast?models=meteoswiss_icon_ch2&" }
+    { name: "MeteoSwiss (Svizzero)", endpoint: "https://api.open-meteo.com/v1/forecast?models=meteoswiss_icon_ch2&" },
+    { name: "ItaliaMeteo (Italiano)", endpoint: "https://api.open-meteo.com/v1/forecast?models=italia_meteo_arpae_icon_2i&forecast_days=5&" }
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -475,7 +476,8 @@ function updateChart(selectedDay) {
         "NOAA GFS (USA)": "#ef4444",
         "CMC GEM (Canadese)": "#10b981",
         "MeteoFrance (Francese)": "#ec4899",
-        "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)"
+        "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)",
+        "ItaliaMeteo (Italiano)": "rgb(5, 1, 255)"
     };
 
     const providerColorsPrec = {
@@ -484,8 +486,9 @@ function updateChart(selectedDay) {
         "NOAA GFS (USA)": "#2563eb",
         "CMC GEM (Canadese)": "#10b981",
         "MeteoFrance (Francese)": "#8b5cf6",
-        "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)"
-    };
+        "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)",
+        "ItaliaMeteo (Italiano)": "rgb(5, 1, 255)"
+ };
 
     const colors = isTemp ? providerColorsTemp : providerColorsPrec;
 
