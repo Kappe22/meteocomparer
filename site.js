@@ -9,8 +9,8 @@ let currentChartType = 'temp'; // 'temp' o 'prec'
 const PROVIDERS = [
     { name: "ECMWF (Europeo)", endpoint: "https://api.open-meteo.com/v1/ecmwf?" },
     { name: "DWD ICON (Tedesco)", endpoint: "https://api.open-meteo.com/v1/dwd-icon?" },
-    { name: "NOAA GFS (USA)", endpoint: "https://api.open-meteo.com/v1/gfs?" },
-    { name: "CMC GEM (Canadese)", endpoint: "https://api.open-meteo.com/v1/gem?" },
+    { name: "KNMI (Olandese)", endpoint: "https://api.open-meteo.com/v1/forecast?models=knmi_seamless&forecast_days=5&" },
+    { name: "Geosphere (Austriaco)", endpoint: "https://api.open-meteo.com/v1/forecast?models=geosphere_arome_austria&forecast_days=5&" },
     { name: "MeteoFrance (Francese)", endpoint: "https://api.open-meteo.com/v1/meteofrance?" },
     { name: "MeteoSwiss (Svizzero)", endpoint: "https://api.open-meteo.com/v1/forecast?models=meteoswiss_icon_ch2&" },
     { name: "ItaliaMeteo (Italiano)", endpoint: "https://api.open-meteo.com/v1/forecast?models=italia_meteo_arpae_icon_2i&forecast_days=5&" }
@@ -471,20 +471,20 @@ function updateChart(selectedDay) {
     ];
 
     const providerColorsTemp = {
-        "ECMWF (Europeo)": "#6366f1",
+        "ECMWF (Europeo)": "#06b6d4",
         "DWD ICON (Tedesco)": "#f59e0b",
-        "NOAA GFS (USA)": "#ef4444",
-        "CMC GEM (Canadese)": "#10b981",
-        "MeteoFrance (Francese)": "#ec4899",
+        "KNMI (Olandese)": "#ef4444",
+        "Geosphere (Austriaco)": "#10b981",
+        "MeteoFrance (Francese)": "#8b5cf6",
         "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)",
         "ItaliaMeteo (Italiano)": "rgb(5, 1, 255)"
     };
 
     const providerColorsPrec = {
         "ECMWF (Europeo)": "#06b6d4",
-        "DWD ICON (Tedesco)": "#0284c7",
-        "NOAA GFS (USA)": "#2563eb",
-        "CMC GEM (Canadese)": "#10b981",
+        "DWD ICON (Tedesco)": "#f59e0b",
+        "KNMI (Olandese)": "#ef4444",
+        "Geosphere (Austriaco)": "#10b981",
         "MeteoFrance (Francese)": "#8b5cf6",
         "MeteoSwiss (Svizzero)": "rgb(60, 255, 1)",
         "ItaliaMeteo (Italiano)": "rgb(5, 1, 255)"

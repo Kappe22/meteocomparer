@@ -434,8 +434,8 @@ tr:last-child td.col-avg {
 }
 .badge-model.euro { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
 .badge-model.ger { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
-.badge-model.usa { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
-.badge-model.can { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+.badge-model.ned { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+.badge-model.aus { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
 .badge-model.fra { background: rgba(236, 72, 153, 0.2); color: #fbcfe8; }
 .badge-model.ch { background: rgba(4, 250, 24, 0.2); color: #91aaa5; }
 .badge-model.ita { background: rgba(17, 0, 255, 0.2); color: #b3b4c9; }
